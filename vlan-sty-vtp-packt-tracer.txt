@@ -1,0 +1,232 @@
+#ISP
+hostname ISP
+interface s2/0
+ ip address 192.168.1.121 255.255.255.252
+ no shutdown
+exit
+
+interface s3/0
+ ip address 192.168.1.125 255.255.255.252
+ no shutdown
+exit
+
+router rip
+ version 2
+ network 192.168.1.120
+ network 192.168.1.124
+ no auto-summary
+exit
+
+
+
+#R1
+
+enable
+conf t
+hostname R1
+
+interface s2/0
+ ip address 192.168.1.122 255.255.255.252
+ no shutdown
+exit
+
+interface f0/0
+ no shutdown
+exit
+
+interface f0/0.10
+ encapsulation dot1q 10
+ ip address 192.168.1.1 255.255.255.192
+exit
+
+interface f0/0.20
+ encapsulation dot1q 20
+ ip address 192.168.1.113 255.255.255.248
+exit
+
+router rip
+ version 2
+ network 192.168.1.0
+ network 192.168.1.112
+ network 192.168.1.120
+ no auto-summary
+exit
+
+#R2
+
+enable
+conf t
+hostname R2
+
+interface s2/0
+ ip address 192.168.1.126 255.255.255.252
+ no shutdown
+exit
+
+interface f0/0
+ no shutdown
+exit
+
+interface f0/0.30
+ encapsulation dot1q 30
+ ip address 192.168.1.65 255.255.255.224
+exit
+
+interface f0/0.40
+ encapsulation dot1q 40
+ ip address 192.168.1.97 255.255.255.248
+exit
+
+router rip
+ version 2
+ network 192.168.1.64
+ network 192.168.1.96
+ network 192.168.1.124
+ no auto-summary
+exit
+
+
+#SSW1
+
+enable
+conf t
+hostname SSW1
+
+vlan 10
+ name GERENCIA
+exit
+
+vlan 20
+ name CONTABILIDAD
+exit
+
+vtp mode server
+vtp domain CENTRAL
+vtp password 123
+
+int r f0/1-3
+switchport mode trunk
+exit
+
+#SSW2
+
+enable
+conf t
+hostname SSW2
+
+vlan 30
+ name SISTEMAS
+exit
+
+vlan 40
+ name VENTAS
+exit
+
+vtp mode server
+vtp domain SUCURSAL
+vtp password 456
+
+int r f0/1-3
+switchport mode trunk
+exit
+
+#SWC1
+enable
+conf t
+hostname SWC1
+
+vtp mode client
+vtp domain CENTRAL
+vtp password 123
+
+int f0/2
+switchport mode trunk
+exit
+
+int f0/3
+switchport mode access
+switchport access vlan 10
+exit
+
+int f0/4
+switchport mode access
+switchport access vlan 20
+exit
+
+spanning-tree vlan 10 root primary
+
+
+#SWC2
+enable
+conf t
+hostname SWC2
+
+vtp mode client
+vtp domain CENTRAL
+vtp password 123
+
+int f0/2
+switchport mode trunk
+exit
+
+int f0/3
+switchport mode access
+switchport access vlan 10
+exit
+
+int f0/4
+switchport mode access
+switchport access vlan 20
+exit
+
+spanning-tree vlan 20 root primary
+---------------------------------------------------------------------------
+#SWC1 -server2
+enable
+conf t
+hostname SWC1-SERVER2
+
+vtp mode client
+vtp domain SUCURSAL
+vtp password 456
+
+int f0/2
+switchport mode trunk
+exit
+
+int f0/3
+switchport mode access
+switchport access vlan 30
+exit
+
+int f0/4
+switchport mode access
+switchport access vlan 40
+exit
+
+spanning-tree vlan 30 root primary
+
+#SWC1 -server2
+enable
+conf t
+hostname SWC2-SERVER2
+
+vtp mode client
+vtp domain SUCURSAL
+vtp password 456
+
+int f0/2
+switchport mode trunk
+exit
+
+int f0/3
+switchport mode access
+switchport access vlan 30
+exit
+
+int f0/4
+switchport mode access
+switchport access vlan 40
+exit
+
+spanning-tree vlan 40 root primary
