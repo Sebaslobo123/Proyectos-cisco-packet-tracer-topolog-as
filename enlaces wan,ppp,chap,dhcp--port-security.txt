@@ -1,0 +1,325 @@
+#R1
+en
+conf t
+hostname R1
+int f0/0
+no sh
+exit
+
+int f0/0.10
+encapsulation dot1q 10
+ip add 10.0.0.1 255.255.248.0
+exit
+
+int f0/0.20
+encapsulation dot1q 20
+ip add 10.0.8.1 255.255.252.0
+exit
+
+int s2/0
+ip add 10.0.14.129 255.255.255.252
+no sh
+exit
+
+int s3/0
+ip add 10.0.14.137 255.255.255.252
+no sh
+exit
+
+router eigrp 1
+network 10.0.0.0 0.0.7.255
+network 10.0.8.0 0.0.3.255
+network 10.0.14.128 0.0.0.3
+network 10.0.14.136 0.0.0.3
+no auto-summary
+exit
+
+int f0/0.10
+ip helper-address 10.0.14.130
+exit
+
+int f0/0.20
+ip helper-address 10.0.14.130
+exit
+
+int s2/0
+encapsulation ppp
+exit
+
+int s3/0
+encapsulation ppp
+exit
+
+int s2/0
+ppp authentication chap
+exit
+
+int s3/0
+ppp authentication chap
+exit
+
+username ISP password 123
+username R2 password 456
+
+#R2
+
+en
+conf t
+hostname R1
+int f0/0
+no sh
+exit
+
+int f0/0.30
+encapsulation dot1q 30
+ip add 10.0.12.1 255.255.254.0
+exit
+
+int f0/0.40
+encapsulation dot1q 40
+ip add 10.0.14.1 255.255.255.128
+exit
+
+int s2/0
+ip add 10.0.14.133 255.255.255.252
+no sh
+exit
+
+int s3/0
+ip add 10.0.14.138 255.255.255.252
+no sh
+exit
+
+router eigrp 1
+network 10.0.12.0 0.0.1.255
+network 10.0.14.0 0.0.0.127
+network 10.0.14.132 0.0.0.3
+network 10.0.14.136 0.0.0.3
+no auto-summary
+exit
+
+int f0/0.30
+ip helper-address 10.0.14.134
+exit
+
+int f0/0.40
+ip helper-address 10.0.14.134
+exit
+
+int s3/0
+encapsulation ppp
+exit
+
+int s3/0
+ppp authentication chap
+exit
+
+username R1 password 123
+
+#ISP
+
+en
+conf t
+hostname ISP
+
+interface Serial2/0
+ip address 10.0.14.130 255.255.255.252
+no shutdown
+exit
+
+interface Serial3/0
+ip address 10.0.14.134 255.255.255.252
+no shutdown
+exit
+
+router eigrp 1
+network 10.0.14.128 0.0.0.3
+network 10.0.14.132 0.0.0.3
+no auto-summary
+exit
+
+ip dhcp pool VENTAS
+network 10.0.0.0 255.255.248.0
+default-router 10.0.0.1
+exit
+
+ip dhcp pool FINANZAS
+network 10.0.8.0 255.255.252.0
+default-router 10.0.8.1
+exit
+
+ip dhcp pool REDES
+network 10.0.12.0 255.255.254.0
+default-router 10.0.12.1
+exit
+
+ip dhcp pool GERENCIA
+network 10.0.14.0 255.255.255.128
+default-router 10.0.14.1
+exit
+
+int s2/0
+encapsulation ppp
+exit
+
+int s3/0
+encapsulation ppp
+exit
+
+int s2/0
+ppp authentication chap
+exit
+
+username R1 password 123
+---------------------------------------------------------------
+CONFIGURAR LOS SWITCHES
+---------------------------------------------------------------
+#SSW1
+
+en
+conf t
+hostname SSW1
+
+vlan 10
+name VENTAS
+vlan 20
+name FINANZAS
+
+vtp mode server
+vtp domain LOPEZ
+vtp password LOPEZ
+
+int r f0/1-3
+switchport mode trunk
+exit
+
+#SSW2
+
+en
+conf t
+hostname SSW2
+
+vlan 30
+name REDES
+vlan 40
+name GERENCIA
+
+vtp mode server
+vtp domain RAMIREZ
+vtp password REMIREZ
+
+int r f0/1-3
+switchport mode trunk
+exit
+
+#SW1CL1
+
+en
+conf t
+hostname SW1CL1
+
+vtp mode client
+vtp domain LOPEZ
+vtp password LOPEZ
+
+int f0/2
+switchport mode trunk
+exit
+
+int f0/3
+switchport mode access
+switchport access vlan 10
+exit
+
+int f0/4
+switchport mode access
+switchport access vlan 20
+exit
+
+spanning-tree vlan 10 root primary
+
+interface FastEthernet0/3
+switchport mode access
+switchport port-security
+switchport port-security mac-address sticky
+switchport port-security maximum 1
+switchport port-security violation restrict
+exit
+
+#SW1CL1
+
+en
+conf t
+hostname SW1CL2
+
+vtp mode client
+vtp domain LOPEZ
+vtp password LOPEZ
+
+int f0/2
+switchport mode trunk
+exit
+
+int f0/3
+switchport mode access
+switchport access vlan 10
+exit
+
+int f0/4
+switchport mode access
+switchport access vlan 20
+exit
+
+spanning-tree vlan 20 root primary
+
+#SW2CL1
+
+en
+conf t
+hostname SW2CL2
+
+vtp mode client
+vtp domain RAMIREZ
+vtp password REMIREZ
+
+int f0/2
+switchport mode trunk
+exit
+
+int f0/3
+switchport mode access
+switchport access vlan 30
+exit
+
+int f0/4
+switchport mode access
+switchport access vlan 40
+exit
+
+spanning-tree vlan 30 root primary
+
+#SW2CL2
+
+en
+conf t
+hostname SW2CL2
+
+vtp mode client
+vtp domain RAMIREZ
+vtp password REMIREZ
+
+int f0/2
+switchport mode trunk
+exit
+
+int f0/3
+switchport mode access
+switchport access vlan 30
+exit
+
+int f0/4
+switchport mode access
+switchport access vlan 40
+exit
+
+spanning-tree vlan 40 root primary
