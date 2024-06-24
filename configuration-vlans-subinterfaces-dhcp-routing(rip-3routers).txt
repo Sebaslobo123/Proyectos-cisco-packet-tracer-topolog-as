@@ -1,0 +1,312 @@
+********************************************
+SWS1
+********************************************
+enable
+configure terminal
+
+hostname SWS1
+
+vlan 10
+name ADMIN
+vlan 90
+name NATIVA
+exit
+
+vtp mode server
+vtp domain cisco
+vtp password cisco
+
+interface range fastethernet 0/1 - 2
+ switchport mode trunk
+ switchport trunk native vlan 90
+exit
+
+end
+********************************************
+SWC1
+********************************************
+en
+conf t
+hostname SWC1
+
+vtp mode client
+vtp domain cisco
+vtp password cisco
+
+int r f0/2-5
+switchport mode access
+switchport access vlan 10
+ex
+
+interface fastethernet 0/1
+ switchport mode trunk
+ switchport trunk native vlan 90
+exit
+********************************************
+SWS2
+********************************************
+enable
+configure terminal
+
+hostname SWS2
+
+vlan 20
+name SENADO
+vlan 90
+name NATIVA
+exit
+
+vtp mode server
+vtp domain cisco
+vtp password cisco
+
+interface range fastethernet 0/1 - 2
+ switchport mode trunk
+ switchport trunk native vlan 90
+exit
+
+end
+********************************************
+SWC2
+********************************************
+en
+conf t
+hostname SWC2
+
+vtp mode client
+vtp domain cisco
+vtp password cisco
+
+int r f0/2-5
+switchport mode access
+switchport access vlan 20
+ex
+
+interface fastethernet 0/1
+ switchport mode trunk
+ switchport trunk native vlan 90
+
+********************************************
+SWS3
+********************************************
+enable
+configure terminal
+
+hostname SWS3
+
+vlan 30
+name POLICE
+vlan 90
+name NATIVA
+exit
+
+vtp mode server
+vtp domain cisco
+vtp password cisco
+
+interface range fastethernet 0/1 - 2
+ switchport mode trunk
+ switchport trunk native vlan 90
+exit
+
+end
+********************************************
+SWC3
+********************************************
+en
+conf t
+hostname SWC3
+
+vtp mode client
+vtp domain cisco
+vtp password cisco
+
+int r f0/2-5
+switchport mode access
+switchport access vlan 30
+ex
+
+interface fastethernet 0/1
+ switchport mode trunk
+ switchport trunk native vlan 90
+ex
+---------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
+Configuración de los routers
+---------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
+R1
+*********************************************************************************************
+enable
+configure terminal
+
+hostname R1
+
+interface fastethernet 0/0
+ no ip address
+ no shutdown
+exit
+
+interface fastethernet 0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.10.1 255.255.255.0
+ no shutdown
+exit
+
+interface fastethernet 0/0.90
+ encapsulation dot1Q 90 native
+ description NATIVA
+ no shutdown
+exit
+
+interface serial 2/0
+ ip address 10.0.1.1 255.255.255.252
+ clock rate 56000
+ no shutdown
+exit
+
+interface serial 3/0
+ ip address 10.0.2.1 255.255.255.252
+ clock rate 56000
+ no shutdown
+exit
+
+ip dhcp excluded-address 192.168.10.1 192.168.10.5
+
+ip dhcp pool ADMIN
+ network 192.168.10.0 255.255.255.0
+ dns-server 8.8.8.8
+ default-router 192.168.10.1
+exit
+
+router rip
+version 2
+network 192.168.10.0
+network 10.0.1.0
+network 10.0.2.0
+ex
+
+---------------------------------------------------------------------------------------------
+R2
+*********************************************************************************************
+enable
+configure terminal
+
+hostname R2
+
+interface fastethernet 0/0
+ no ip address
+ no shutdown
+exit
+
+interface fastethernet 0/0.30
+ encapsulation dot1Q 30
+ ip address 192.168.30.1 255.255.255.0
+ no shutdown
+exit
+
+interface fastethernet 0/0.90
+ encapsulation dot1Q 90 native
+ description NATIVA
+ no shutdown
+exit
+
+interface serial 2/0
+ ip address 10.0.1.2 255.255.255.252
+ clock rate 56000
+ no shutdown
+exit
+
+interface serial 3/0
+ ip address 10.0.3.1 255.255.255.252
+ clock rate 56000
+ no shutdown
+exit
+
+ip dhcp excluded-address 192.168.20.1 192.168.20.20
+
+ip dhcp pool SENADO
+ network 192.168.20.0 255.255.255.0
+ dns-server 8.8.8.8
+ default-router 192.168.20.1
+exit
+
+router rip
+version 2
+network 192.168.20.0
+network 10.0.2.0
+network 10.0.3.0
+ex
+
+
+---------------------------------------------------------------------------------------------
+R3
+*********************************************************************************************
+enable
+configure terminal
+
+hostname R3
+
+interface fastethernet 0/0
+ no ip address
+ no shutdown
+exit
+
+interface fastethernet 0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.20.1 255.255.255.0
+ no shutdown
+exit
+
+interface fastethernet 0/0.90
+ encapsulation dot1Q 90 native
+ description NATIVA
+ no shutdown
+exit
+
+interface serial 2/0
+ ip address 10.0.3.2 255.255.255.252
+ clock rate 56000
+ no shutdown
+exit
+
+interface serial 3/0
+ ip address 10.0.2.2 255.255.255.252
+ clock rate 56000
+ no shutdown
+exit
+
+ip dhcp excluded-address 192.168.30.1 192.168.30.5
+
+ip dhcp pool POLICE
+ network 192.168.30.0 255.255.255.0
+ dns-server 8.8.8.8
+ default-router 192.168.30.1
+exit
+
+    router rip
+    version 2
+    network 192.168.30.0
+    network 10.0.1.0
+    network 10.0.3.0
+    ex
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
