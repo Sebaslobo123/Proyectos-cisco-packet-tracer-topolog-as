@@ -1,0 +1,141 @@
+-------------------------------------------------
+Configuración R1
+-------------------------------------------------
+en
+conf t
+hostname R1
+int s0/0/0
+ip add 10.0.0.1 255.255.255.252
+no sh
+ex
+
+int g0/0
+no ip address
+no sh
+ex
+
+int g0/0.10
+encapsulation dot1Q 10
+ip add 192.168.0.1 255.255.255.0
+ex
+
+int g0/0.20
+encapsulation dot1Q 20
+ip add 192.168.1.1 255.255.255.0
+ex
+
+ip dhcp pool ADMIN
+network 192.168.0.0 255.255.255.0
+default-router 192.168.0.1
+ex
+
+ip dhcp pool GESTION
+network 192.168.1.0 255.255.255.0
+default-router 192.168.1.1
+ex
+
+ip dhcp excluded-address 192.168.0.1 192.168.0.20
+ip dhcp excluded-address 192.168.1.1 192.168.1.20
+
+router rip
+version 2
+network 192.168.0.0
+network 192.168.1.0
+network 10.0.0.0
+ex
+
+end
+wr
+
+-------------------------------------------------
+Configuración R2
+-------------------------------------------------
+en
+conf t
+hostname R1
+int s0/0/0
+ip add 10.0.0.2 255.255.255.252
+no sh
+ex
+
+int g0/0
+no ip address
+no sh
+ex
+
+int g0/0.10
+encapsulation dot1Q 10
+ip add 192.168.2.1 255.255.255.0
+ex
+
+int g0/0.20
+encapsulation dot1Q 20
+ip add 192.168.3.1 255.255.255.0
+ex
+
+ip dhcp pool ADMIN
+network 192.168.2.0 255.255.255.0
+default-router 192.168.2.1
+ex
+
+ip dhcp pool GESTION
+network 192.168.3.0 255.255.255.0
+default-router 192.168.3.1
+ex
+
+ip dhcp excluded-address 192.168.2.1 192.168.2.20
+ip dhcp excluded-address 192.168.3.1 192.168.3.20
+
+router rip
+version 2
+network 192.168.2.0
+network 192.168.3.0
+network 10.0.0.0
+ex
+
+end
+wr
+***********************************************************************************
+Configuración del SWITCH R1 como modo server Nota: esta misma topología aplica
+para la configuración del SWITCH del R2 (tanto la del cliente como la del servidor)
+***********************************************************************************
+en
+conf t
+hostname SWS1
+
+vtp mode server
+vtp domain cisco
+vtp password cisco
+
+vlan 10
+name ADMIN
+vlan 20
+name GESTION
+ex
+
+int r f0/1-2,g0/1
+switchport mode trunk
+ex
+
+
+**********************************************
+SWITCH cliente  (esto aplica también el nota)
+**********************************************
+en
+conf t
+hostname SWC1
+
+vtp mode client
+vtp domain cisco
+vtp password cisco
+
+int f0/2
+switchport mode access
+switchport access vlan 10
+ex
+
+int f0/3
+switchport mode access
+switchport access vlan 20
+ex
+
