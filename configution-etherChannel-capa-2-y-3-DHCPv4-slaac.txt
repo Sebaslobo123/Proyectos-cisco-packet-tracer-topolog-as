@@ -1,0 +1,256 @@
+# sh etherchannel summary  #este comando sirve para ver el port-channel
+# sh ip dhcp  binding  # este comando sirve para saber que dispositivos sirven han tomando el direccionamiento dhcp
+---------------------------------------------------------------
+MSL CONFIGURATION
+---------------------------------------------------------------
+conf t
+hostname MLS
+
+vlan 10
+name RRHH
+
+vlan 20
+name TI
+
+vlan 30
+name SERVICIOS
+
+vlan 40
+name VENTAS
+exit
+
+interface range GigabitEthernet1/0/1 - 2
+channel-group 4 mode desirable
+exit
+
+interface port-channel 4
+no switchport
+ip address 172.16.100.2 255.255.255.0
+ipv6 address 2021:ACAD:ACAD::100::2/64
+exit
+
+interface Loopback2
+ip address 200.0.0.2 255.255.255.255
+ipv6 address 2021:ACAD:ACAD:200::2/128
+exit
+
+spanning-tree mode rapid-pvst
+
+ip route 0.0.0.0 0.0.0.0 172.16.100.1
+ipv6 route ::/0 2021:ACAD:ACAD:100::1
+ipv6 unicast-routing
+
+ip dhcp excluded-address 172.16.10.1 172.16.10.5
+ip dhcp excluded-address 172.16.40.1 172.16.40.5
+
+ip dhcp pool DHCP-VLAN10
+network 172.16.10.0 255.255.255.0
+default-router 172.16.10.1
+dns-server 200.28.4.12
+domain-name www.duoc.cl
+exit
+
+ip dhcp pool DHCP-VLAN40
+network 172.16.40.0 255.255.255.0
+default-router 172.16.40.1
+dns-server 200.28.4.12
+domain-name www.duoc.cl
+exit
+
+---------------------------------------------------------------
+DSL CONFIGURATION
+---------------------------------------------------------------
+conf t
+hostname DSL
+ip routing
+
+spanning-tree mode rapid-pvst
+
+interface port-channel 3
+switchport mode trunk
+switchport trunk allowed vlan 10,20,30,40
+exit
+
+interface range GigabitEthernet1/0/3 - 4
+channel-group 2 mode desirable
+exit
+
+interface port-channel 2
+switchport mode trunk
+switchport trunk allowed vlan 10,20,30,40
+exit
+
+interface range GigabitEthernet1/0/5 - 6
+channel-group 4 mode auto
+exit
+
+interface port-channel 4
+no switchport
+ip address 172.16.100.1 255.255.255.0
+ipv6 address 2021:ACAD:ACAD:100::1/64
+exit
+
+interface vlan 10
+ip address 172.16.10.1 255.255.255.0
+ipv6 address 2021:ACAD:ACAD:10::1/64
+no shutdown
+exit
+
+interface vlan 20
+ip address 172.16.20.1 255.255.255.0
+ipv6 address 2021:ACAD:ACAD:20::1/64
+no shutdown
+exit
+
+interface vlan 30
+ip address 172.16.30.1 255.255.255.0
+ipv6 address 2021:ACAD:ACAD:30::1/64
+no shutdown
+exit
+
+interface vlan 40
+ip address 172.16.40.1 255.255.255.0
+ipv6 address 2021:ACAD:ACAD:40::1/64
+no shutdown
+exit
+
+ip route 0.0.0.0 0.0.0.0 172.16.100.2
+
+ipv6 route ::/0 2021:ACAD:ACAD:100::2
+
+ipv6 unicast-routing
+
+ip dhcp excluded-address 172.16.20.1 172.16.20.5
+ip dhcp excluded-address 172.16.30.1 172.16.30.5
+
+ip dhcp pool DHCP-VLAN20
+network 172.16.20.0 255.255.255.0
+default-router 172.16.20.1
+dns-server 8.8.8.8
+domain-name www.duoc.cl
+exit
+
+ip dhcp pool DHCP-VLAN30
+network 172.16.30.0 255.255.255.0
+default-router 172.16.30.1
+dns-server 8.8.8.8
+domain-name www.duoc.cl
+exit
+
+end
+
+
+---------------------------------------------------------------
+SWB CONFIGURATION
+---------------------------------------------------------------
+en
+conf t
+hostname SWB
+vlan 10
+name RRHH
+vlan 20
+name TI
+vlan 30
+name SERVICIOS
+vlan 40
+name VENTAS
+ex
+
+interface range FastEthernet0/1 - 2
+ channel-group 1 mode on
+ exit
+
+interface port-channel 1
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40
+ exit
+
+int r g0/1-2
+channel-group 2 mode auto
+ex
+
+int port-channel 2
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40
+ exit
+
+ int f0/10
+switchport mode access
+switchport access vlan 30
+ex
+
+int f0/20
+switchport mode access
+switchport access vlan 40
+ex
+
+spanning-tree mode rapid-pvst
+
+int f0/10
+spanning-tree portfast
+spanning-tree bpduguard enable
+ex
+
+int f0/20
+spanning-tree portfast
+spanning-tree bpduguard enable
+ex
+
+
+---------------------------------------------------------------
+SWA CONFIGURATION
+---------------------------------------------------------------
+en
+conf t
+hostname SWA
+vlan 10
+name RRHH
+vlan 20
+name TI
+vlan 30
+name SERVICIOS
+vlan 40
+name VENTAS
+ex
+
+int r g0/1-2
+channel-group 3 mode active
+ex
+
+interface port-channel 3
+switchport mode trunk
+switchport trunk allowed vlan 10,20,30,40
+ex
+
+interface range FastEthernet0/1 - 2
+ channel-group 1 mode on
+ exit
+
+interface port-channel 1
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40
+ exit
+
+  int f0/10
+switchport mode access
+switchport access vlan 10
+ex
+
+int f0/20
+switchport mode access
+switchport access vlan 20
+ex
+
+spanning-tree mode rapid-pvst
+
+int f0/10
+spanning-tree portfast
+spanning-tree bpduguard enable
+ex
+
+int f0/20
+spanning-tree portfast
+spanning-tree bpduguard enable
+ex
+
+
